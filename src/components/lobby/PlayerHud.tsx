@@ -12,13 +12,21 @@ const PlayerHud = () => {
     const [name, setName] = useState("");
     const [_image, setImage] = useState<File | null>(null);
 
+    const [editing, setEditing] = useState(false);
+
     useEffect(() => {
+        if (editing) {
+            return;
+        }
+
         if (player?.player_name) {
             setName(player.player_name);
         }
     }, [player]);
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEditing(true);
+
         setName(e.target.value);
     };
 
@@ -48,6 +56,7 @@ const PlayerHud = () => {
         console.log("Saved Name:", name);
         const newNameData: NewNameData = { new_name: name };
         sendMessage(Event.SET_NAME, newNameData);
+        setEditing(false);
     };
 
     const handleReady = () => {
