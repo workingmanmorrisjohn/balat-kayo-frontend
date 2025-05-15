@@ -4,6 +4,7 @@ import { Event } from "../../enums/Event";
 import { EmptyEventData, NewNameData } from "../../backend/EventDataTypes";
 import { usePocketBase } from "../../providers/PocketbaseProvider";
 import { resizeImage } from "../../utils/UtilityFunctions";
+import { LocalStorageKey } from "../../enums/LocalStorageKey";
 
 const PlayerHud = () => {
     const pb = usePocketBase();
@@ -53,6 +54,8 @@ const PlayerHud = () => {
                 sendMessage(Event.SET_IMAGE, {
                     player_image_url: pb.files.getURL(record, record.image),
                 });
+
+                localStorage.setItem(LocalStorageKey.PLAYER_IMAGE_URL, pb.files.getURL(record, record.image));
             } catch (error) {
                 console.error("Image upload failed:", error);
             } finally {
@@ -67,6 +70,7 @@ const PlayerHud = () => {
         const newNameData: NewNameData = { new_name: name };
         sendMessage(Event.SET_NAME, newNameData);
         setEditing(false);
+        localStorage.setItem(LocalStorageKey.PLAYER_NAME, name);
     };
 
     const handleReady = () => {

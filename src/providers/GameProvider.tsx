@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router';
 import { RoutePath } from '../enums/RoutePath';
 import { GameResult, VoteSummary } from '../types/GameResult';
 import { WEBSOCKET_URL } from '../utils/BaseUrl';
+import { LocalStorageKey } from '../enums/LocalStorageKey';
 
 
 interface GameContextType {
@@ -139,7 +140,13 @@ export const GameContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
         websocket.onopen = () => {
             console.log("WebSocket connected");
 
-            const data: IdentifyData = { player_name: "", player_image_url: "", is_ready: false }
+            const savedName = localStorage.getItem(LocalStorageKey.PLAYER_NAME);
+            const savedUrl = localStorage.getItem(LocalStorageKey.PLAYER_IMAGE_URL)
+
+            const data: IdentifyData = { 
+                player_name: savedName ? savedName : "",
+                player_image_url: savedUrl ? savedUrl : "", 
+                is_ready: false }
 
             sendMessage(Event.IDENTIFY, data);
         };

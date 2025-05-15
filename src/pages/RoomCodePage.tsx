@@ -12,6 +12,11 @@ const RoomCodePage = () => {
     const [numberOfRounds, setNumberOfRounds] = useState(1);
 
     const createRoom = async (): Promise<string | null> => {
+        if (numberOfRounds == 0) {
+            alert("Number of rounds Can't be 0!");
+            return null;
+        }
+
         try {
             const response = await fetch(`${ROOM_BASE_URL}/create-room`, {
                 method: 'POST',
