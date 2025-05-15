@@ -33,5 +33,6 @@ export interface VoteData {
 export interface GameResultData {
     impostor: string;
     winner: 'impostor' | 'players';
-    votes: VoteSummary[]
+    votes: VoteSummary[];
+    word: string;
 }

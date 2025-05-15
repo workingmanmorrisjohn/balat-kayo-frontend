@@ -10,7 +10,7 @@ import ImpostorCard from "../components/results/ImpostorCard";
 
 const ResultsPage = () => {
     const navigate = useNavigate();
-    const {reset} = useGameContext();
+    const {reset, gameResult} = useGameContext();
 
     const handleBackToLobby = () => {
         navigate(RoutePath.LOBBY);
@@ -25,9 +25,16 @@ const ResultsPage = () => {
                     <RoomIdHeaderResults />
                     <Spacer />
 
+                    <div className="w-full flex flex-col items-center rounded-xl p-4 bg-white shadow-lg">
+                        <h1 className="text-lg font-black">{gameResult?.word}</h1>
+                    </div>
+
+                    <Spacer />
                     <h2 className="mb-2 text-lg font-semibold">Impostor</h2>
                     <ImpostorCard />
                     <Spacer />
+
+
 
                     <h2 className="mb-2 text-lg font-semibold">Votes</h2>
 

@@ -30,6 +30,34 @@ const RoomCodePage = () => {
         return null;
     };
 
+    const validRoom = async (roomId: string) : Promise<boolean | null> => {
+        try {
+            const response = await fetch(`${ROOM_BASE_URL}/room-status/${roomId}`, {
+                method: 'GET'
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to check room status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            const room_status = data.status
+
+            if (room_status == "STARTED") {
+                return false;
+            }
+
+            if (room_status == "WAITING") {
+                return true;
+            }
+        } catch (error) {
+            console.error('Error creating room:', error);
+        }
+
+        return null;
+    }
+
     const handleCreateRoom = async () => {
         const room_id = await createRoom();
         if (room_id) {
@@ -38,13 +66,30 @@ const RoomCodePage = () => {
         }
     };
 
-    const handleJoinRoom = () => {
+    const handleJoinRoom = async  () => {
         if (!roomCode.trim()) {
             alert("Please enter a room code.");
             return;
         }
-        joinRoom(roomCode.trim());
-        navigate(RoutePath.LOBBY);
+
+        const isRoomValid = await validRoom(roomCode.trim());
+
+        if (isRoomValid) {
+            joinRoom(roomCode.trim());
+            navigate(RoutePath.LOBBY);
+        }
+
+        if (!isRoomValid) {
+            if (isRoomValid == null) {
+                alert("Room does not exist!");
+            }
+            else {
+                alert("Game already started! Wait for it to finish before joining.")
+            }
+        }
+
+
+        
     };
 
     return (

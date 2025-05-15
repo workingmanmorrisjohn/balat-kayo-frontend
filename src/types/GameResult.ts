@@ -3,6 +3,7 @@ export interface GameResult {
     impostor: string;
     winner: 'impostor' | 'players';
     votes: VoteSummary[];
+    word: string;
 }
 
 export interface VoteSummary {

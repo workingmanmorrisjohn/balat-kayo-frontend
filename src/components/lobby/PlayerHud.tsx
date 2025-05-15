@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Event } from "../../enums/Event";
 import { EmptyEventData, NewNameData } from "../../backend/EventDataTypes";
 import { usePocketBase } from "../../providers/PocketbaseProvider";
+import { resizeImage } from "../../utils/UtilityFunctions";
 
 const PlayerHud = () => {
     const pb = usePocketBase();
@@ -13,6 +14,7 @@ const PlayerHud = () => {
     const [_image, setImage] = useState<File | null>(null);
 
     const [editing, setEditing] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         if (editing) {
@@ -34,23 +36,31 @@ const PlayerHud = () => {
         const file = e.target.files?.[0];
         if (file) {
             setImage(file);
-
-            const formData = new FormData();
-            formData.append("image", file);
-
+    
+            setUploading(true);
+    
             try {
+                // Resize image before upload
+                const resizedBlob = await resizeImage(file, 300, 300); // max 300x300 px
+                const resizedFile = new File([resizedBlob], file.name, { type: file.type });
+    
+                const formData = new FormData();
+                formData.append("image", resizedFile);
+    
                 const record = await pb.collection('player_image').create(formData);
                 console.log("Image uploaded:", record);
-
-                // If PocketBase returns a URL or record ID
+    
                 sendMessage(Event.SET_IMAGE, {
-                    player_image_url: pb.files.getURL(record, record.image), // adjust based on your field name
+                    player_image_url: pb.files.getURL(record, record.image),
                 });
             } catch (error) {
                 console.error("Image upload failed:", error);
+            } finally {
+                setUploading(false);
             }
         }
     };
+    
 
     const handleSave = () => {
         console.log("Saved Name:", name);
@@ -78,23 +88,31 @@ const PlayerHud = () => {
                                 Ready
                             </span>
                         )}
-                        <label className="cursor-pointer">
-                            <img
-                                src={
-                                    player?.player_image_url
-                                        ? player.player_image_url
-                                        : "https://blog.spoongraphics.co.uk/wp-content/uploads/2017/vector-characters/24.png"
-                                }
-                                alt="Profile"
-                                className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
-                            />
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleFileChange}
-                            />
-                        </label>
+                        <div className="relative w-20 h-20">
+                            <label className="cursor-pointer w-full h-full">
+                                <img
+                                    src={
+                                        player?.player_image_url
+                                            ? player.player_image_url
+                                            : "https://blog.spoongraphics.co.uk/wp-content/uploads/2017/vector-characters/24.png"
+                                    }
+                                    alt="Profile"
+                                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                                />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                            </label>
+                            {uploading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60 rounded-full">
+                                    <span className="loading loading-spinner loading-sm"></span>
+                                </div>
+                            )}
+                        </div>
+
                     </div>
 
                     <div className="flex flex-col h-full gap-4 items-center justify-center">
@@ -106,7 +124,11 @@ const PlayerHud = () => {
                             onChange={handleNameChange}
                         />
                         <div className="w-full flex flex-row items-center justify-center gap-4">
-                            <button className="btn btn-primary" onClick={handleSave}>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleSave}
+                                disabled={!editing}
+                            >
                                 Save
                             </button>
                             <button

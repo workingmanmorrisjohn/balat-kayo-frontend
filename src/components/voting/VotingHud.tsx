@@ -1,9 +1,12 @@
+import { useEffect, useState } from "react";
 import { VoteData } from "../../backend/EventDataTypes";
 import { Event } from "../../enums/Event";
 import { useGameContext } from "../../providers/GameProvider";
 
 const VotingHud = () => {
-    const { selectedPlayer, sendMessage, vote, voted, players } = useGameContext();
+    const { selectedPlayer, sendMessage, vote, voted, players, currentPlayer } = useGameContext();
+
+    const [validPlayer, setValidPlayer] = useState(true);
 
     const handleVote = () => {
         const voteData: VoteData = { voted: selectedPlayer ? selectedPlayer.player_id : "" };
@@ -13,13 +16,19 @@ const VotingHud = () => {
         vote();
     }
 
+    useEffect(() => {
+        const player = players.find(p => p.player_id === currentPlayer) || null;
+
+        setValidPlayer(player != null);
+    }, [players]);
+
     return (
         <>
             <div className="absolute bottom-0 font-bold w-full h-[200px]">
                 <div className="flex w-full h-full justify-center items-center relative">
                     <div className="w-full h-full bg-white shadow-2xl rounded-2xl p-2 relative">
                         {
-                            !voted && (selectedPlayer != null) && players.includes(selectedPlayer) &&
+                            !voted && (selectedPlayer != null) && validPlayer &&
                             <button
                                 className="btn btn-success text-white absolute top-4 right-4 z-10"
                                 onClick={handleVote}>
