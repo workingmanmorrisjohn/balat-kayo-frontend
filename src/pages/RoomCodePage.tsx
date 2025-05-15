@@ -9,28 +9,33 @@ const RoomCodePage = () => {
     const navigate = useNavigate();
     const { joinRoom } = useGameContext();
     const [roomCode, setRoomCode] = useState("");
+    const [numberOfRounds, setNumberOfRounds] = useState(1);
 
     const createRoom = async (): Promise<string | null> => {
         try {
             const response = await fetch(`${ROOM_BASE_URL}/create-room`, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ numberOfRounds })
             });
-
+    
             if (!response.ok) {
                 throw new Error(`Failed to create room: ${response.status}`);
             }
-
+    
             const data = await response.json();
             console.log('Room created with ID:', data.room_id);
             return data.room_id;
         } catch (error) {
             console.error('Error creating room:', error);
         }
-
+    
         return null;
-    };
+    };    
 
-    const validRoom = async (roomId: string) : Promise<boolean | null> => {
+    const validRoom = async (roomId: string): Promise<boolean | null> => {
         try {
             const response = await fetch(`${ROOM_BASE_URL}/room-status/${roomId}`, {
                 method: 'GET'
@@ -66,7 +71,11 @@ const RoomCodePage = () => {
         }
     };
 
-    const handleJoinRoom = async  () => {
+    const openNewRoomModal = () => {
+        (document.getElementById("new_room_modal") as HTMLDialogElement).showModal();
+    }
+
+    const handleJoinRoom = async () => {
         if (!roomCode.trim()) {
             alert("Please enter a room code.");
             return;
@@ -89,14 +98,14 @@ const RoomCodePage = () => {
         }
 
 
-        
+
     };
 
     return (
         <Page>
             <div className="w-full h-full flex flex-col items-center justify-center">
                 <div className="w-full h-5/12 flex items-end justify-center">
-                    <button onClick={handleCreateRoom} className="btn btn-primary h-2/4 w-3/4 text-xl font-bold text-white">
+                    <button onClick={openNewRoomModal} className="btn btn-primary h-2/4 w-3/4 text-xl font-bold text-white">
                         New Room
                     </button>
                 </div>
@@ -118,6 +127,35 @@ const RoomCodePage = () => {
                     </button>
                 </div>
             </div>
+
+            <dialog id="new_room_modal" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg">Create New Room</h3>
+                    <div className="form-control mt-4">
+                        <label className="label">
+                            <span className="label-text">Number Of Rounds</span>
+                        </label>
+                        <input
+                            type="number"
+                            placeholder="Enter number of rounds"
+                            className="input input-bordered text-lg font-black"
+                            min={1}
+                            value={numberOfRounds}
+                            onChange={(e) => setNumberOfRounds(Number(e.target.value))}
+                            name="roomNumber"
+                        />
+                    </div>
+
+                    <div className="modal-action">
+                        <button className="btn btn-primary" onClick={handleCreateRoom}>Create</button>
+                    </div>
+                </div>
+
+                <form method="dialog" className="modal-backdrop">
+                    <button>close</button>
+                </form>
+            </dialog>
+
         </Page>
     );
 };
